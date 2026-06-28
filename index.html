@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>World Cup 2026 — Bracket Predictor</title>
+  <meta name="description" content="Predict the FIFA World Cup 2026 knockout bracket. Pick every winner from the Round of 32 to the Final and see how you stack up against friends and family." />
+  <link rel="icon" href="assets/trophy.svg" type="image/svg+xml" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+  <script src="config.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <img class="hero-trophy" src="assets/trophy.svg" alt="" width="40" height="40" />
+      <div>
+        <h1 class="hero-title">World Cup 2026</h1>
+        <p class="hero-sub">Knockout Bracket Predictor</p>
+      </div>
+    </div>
+  </header>
+
+  <main id="app" aria-live="polite">
+    <div class="loading">Loading bracket…</div>
+  </main>
+
+  <div id="sticky-cta" class="sticky-cta" hidden></div>
+
+  <div id="modal-root"></div>
+
+  <footer class="site-footer">
+    <span>Single-elimination · 31 picks · 64 points max</span>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

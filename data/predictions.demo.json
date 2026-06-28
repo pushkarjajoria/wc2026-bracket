@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "submissions": [
+    {
+      "name": "Pushkar",
+      "submittedAt": "2026-06-27T19:30:00Z",
+      "picks": {
+        "R32_M1": "Germany", "R32_M2": "France", "R32_M3": "South Africa", "R32_M4": "Netherlands",
+        "R32_M5": "Portugal", "R32_M6": "Spain", "R32_M7": "USA", "R32_M8": "Belgium",
+        "R32_M9": "Brazil", "R32_M10": "Ivory Coast", "R32_M11": "Mexico", "R32_M12": "England",
+        "R32_M13": "Argentina", "R32_M14": "Australia", "R32_M15": "Switzerland", "R32_M16": "Colombia",
+        "R16_M1": "Germany", "R16_M2": "South Africa", "R16_M3": "Portugal", "R16_M4": "USA",
+        "R16_M5": "Brazil", "R16_M6": "Mexico", "R16_M7": "Argentina", "R16_M8": "Switzerland",
+        "QF_M1": "Germany", "QF_M2": "Portugal", "QF_M3": "Brazil", "QF_M4": "Argentina",
+        "SF_M1": "Germany", "SF_M2": "Brazil",
+        "FINAL": "Germany"
+      }
+    },
+    {
+      "name": "Mum",
+      "submittedAt": "2026-06-28T08:15:00Z",
+      "picks": {
+        "R32_M1": "Paraguay", "R32_M2": "Sweden", "R32_M3": "Canada", "R32_M4": "Morocco",
+        "R32_M5": "Croatia", "R32_M6": "Austria", "R32_M7": "Bosnia and Herzegovina", "R32_M8": "Senegal",
+        "R32_M9": "Japan", "R32_M10": "Norway", "R32_M11": "Ecuador", "R32_M12": "DR Congo",
+        "R32_M13": "Cape Verde", "R32_M14": "Egypt", "R32_M15": "Algeria", "R32_M16": "Ghana",
+        "R16_M1": "Paraguay", "R16_M2": "Morocco", "R16_M3": "Croatia", "R16_M4": "Senegal",
+        "R16_M5": "Japan", "R16_M6": "Ecuador", "R16_M7": "Egypt", "R16_M8": "Ghana",
+        "QF_M1": "Morocco", "QF_M2": "Croatia", "QF_M3": "Japan", "QF_M4": "Ghana",
+        "SF_M1": "Croatia", "SF_M2": "Japan",
+        "FINAL": "Japan"
+      }
+    },
+    {
+      "name": "Dad",
+      "submittedAt": "2026-06-28T09:45:00Z",
+      "picks": {
+        "R32_M1": "Germany", "R32_M2": "France", "R32_M3": "Canada", "R32_M4": "Netherlands",
+        "R32_M5": "Portugal", "R32_M6": "Spain", "R32_M7": "USA", "R32_M8": "Belgium",
+        "R32_M9": "Brazil", "R32_M10": "Norway", "R32_M11": "Mexico", "R32_M12": "England",
+        "R32_M13": "Argentina", "R32_M14": "Australia", "R32_M15": "Switzerland", "R32_M16": "Colombia",
+        "R16_M1": "France", "R16_M2": "Netherlands", "R16_M3": "Spain", "R16_M4": "Belgium",
+        "R16_M5": "Brazil", "R16_M6": "England", "R16_M7": "Argentina", "R16_M8": "Colombia",
+        "QF_M1": "France", "QF_M2": "Spain", "QF_M3": "Brazil", "QF_M4": "Argentina",
+        "SF_M1": "Spain", "SF_M2": "Argentina",
+        "FINAL": "Argentina"
+      }
+    }
+  ]
+}

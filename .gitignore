@@ -1,0 +1,9 @@
+# Runtime config holds the PAT — injected by CI, never committed.
+config.js
+
+# Local dev tooling
+dev/
+node_modules/
+
+# OS
+.DS_Store
