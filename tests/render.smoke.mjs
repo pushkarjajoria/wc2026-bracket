@@ -58,4 +58,26 @@ html = renderLeaderboard({ name: "", viewTab: "leaderboard", submissions: evil, 
 assert.ok(!html.includes("<img src=x"), "name must be HTML-escaped");
 assert.ok(html.includes("&lt;img"));
 
+// standings entry point on the name screen
+assert.ok(renderNameEntry({}).includes('data-action="view-standings"'), "name screen offers View standings");
+
+// browsing visitor (not submitted) sees a make-bracket CTA
+const browse = renderLeaderboard({ name: "", viewTab: "leaderboard", submissions: subs, results }, rankSubmissions(subs, results), true);
+assert.ok(browse.includes('data-action="go-predict"'), "browsing visitor sees make-bracket CTA");
+
+// submitted viewer sees no make-bracket CTA
+const mine = renderLeaderboard({ name: "Pushkar", viewTab: "leaderboard", submissions: subs, results }, rankSubmissions(subs, results), true);
+assert.ok(!mine.includes('data-action="go-predict"'), "submitted viewer has no make-bracket CTA");
+assert.ok(mine.includes("You’re entered"));
+
+// results coloring shows up in all-brackets once results exist
+const colored = renderAllBracketsMobile({
+  name: "Pushkar",
+  submissions: subs,
+  results: { R32_M1: "Germany", R32_M9: "Japan" }, // Pushkar: M1 correct, M9 wrong
+  viewPerson: 0,
+});
+assert.ok(colored.includes("res-correct"), "correct pick gets green class");
+assert.ok(colored.includes("res-wrong"), "wrong pick gets red class");
+
 console.log("render smoke: all assertions passed");

@@ -129,6 +129,18 @@ button { font-family: inherit; cursor: pointer; }
 }
 .name-input:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
 .field-error { color: var(--danger); font-size: 13px; min-height: 18px; margin: 8px 0; }
+.entry-or {
+  display: flex; align-items: center; gap: 12px;
+  color: var(--text-secondary); font-size: 12px;
+  margin: 14px 0;
+}
+.entry-or::before, .entry-or::after {
+  content: ""; flex: 1; height: 1px; background: var(--border);
+}
+.lb-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 14px;
+}
 .resume-banner {
   background: var(--surface);
   border: 1px solid var(--border);

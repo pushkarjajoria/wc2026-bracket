@@ -106,6 +106,8 @@ export function renderNameEntry({ resumeName = "", error = "", value = "" } = {}
            placeholder="Your name" maxlength="40" value="${esc(value)}" aria-label="Your name" />
     <div class="field-error" role="alert">${esc(error)}</div>
     <button class="btn btn-primary btn-block" data-action="start">Start picking →</button>
+    <div class="entry-or"><span>or</span></div>
+    <button class="btn btn-ghost btn-block" data-action="view-standings">View standings &amp; everyone’s brackets</button>
   </section>`;
 }
 
@@ -179,8 +181,21 @@ export function renderLeaderboard(state, ranked, hasResults) {
   if (tab === "leaderboard") body = leaderboardTable(state, ranked, hasResults);
   else body = renderAllBrackets(state);
 
+  const submitted = !!(
+    state.name &&
+    (state.submissions || []).some(
+      (s) => s.name.toLowerCase() === state.name.toLowerCase()
+    )
+  );
+  const cta = submitted
+    ? `<span class="muted small">You’re entered as <strong>${esc(state.name)}</strong> ✓</span>`
+    : `<button class="btn btn-primary" data-action="go-predict">Make your bracket →</button>`;
+
   return `<section class="screen">
-    <h2 class="section-title">Standings ${state.demo ? '<span class="demo-tag">DEMO</span>' : ""}</h2>
+    <div class="lb-header">
+      <h2 class="section-title" style="margin:0">Standings ${state.demo ? '<span class="demo-tag">DEMO</span>' : ""}</h2>
+      ${cta}
+    </div>
     ${tabs}
     ${body}
   </section>`;

@@ -294,6 +294,20 @@ document.addEventListener("click", (e) => {
       state.phase = PHASES.NAME_ENTRY;
       render();
       break;
+    case "view-standings":
+      state.phase = PHASES.LEADERBOARD;
+      state.viewTab = state.viewTab || "leaderboard";
+      render();
+      window.scrollTo({ top: 0 });
+      break;
+    case "go-predict":
+      state.phase =
+        state.name && Object.keys(state.picks).length > 0
+          ? PHASES.PREDICT
+          : PHASES.NAME_ENTRY;
+      render();
+      window.scrollTo({ top: 0 });
+      break;
     case "scroll-unpicked": scrollToUnpicked(); break;
     case "next-round": nextRound(); break;
     case "go-review": state.phase = PHASES.REVIEW; render(); window.scrollTo({ top: 0 }); break;
