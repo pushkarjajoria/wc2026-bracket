@@ -1,5 +1,7 @@
 # World Cup 2026 Bracket 🏆⚽
 
+**▶️ Play it here: [pushkarjajoria.github.io/wc2026-bracket](https://pushkarjajoria.github.io/wc2026-bracket/)**
+
 A little game for friends and family to predict the 2026 World Cup knockouts.
 
 Everyone picks who wins every match from the Round of 32 all the way to the Final,
@@ -21,6 +23,14 @@ Green ✅ means you called it right, red ❌ means... better luck next match.
 
 When matches finish, the winners get added and everyone's points update automatically.
 No spreadsheets, no fuss.
+
+## Built with
+
+Nothing fancy — just plain web tech:
+
+- **Vanilla JavaScript** (ES modules), **HTML** & **CSS** — no frameworks, no build step
+- **GitHub Pages** for hosting + **GitHub Actions** to deploy
+- A sprinkle of [canvas-confetti](https://github.com/catdad/canvas-confetti) 🎉, flags from [flagcdn](https://flagcdn.com), and [Google Fonts](https://fonts.google.com)
 
 ---
 
