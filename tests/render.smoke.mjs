@@ -5,8 +5,7 @@ import {
   renderPredict,
   renderReview,
   renderLeaderboard,
-  renderAllBracketsMobile,
-  renderAllBracketsDesktop,
+  renderAllBrackets,
 } from "../render.js";
 import { rankSubmissions } from "../scoring.js";
 
@@ -44,13 +43,15 @@ assert.ok(html.includes("Pushkar"));
 assert.equal(ranked[0].name, "Pushkar");
 assert.equal(ranked[0].score, 17);
 
-// all brackets
-const st = { name: "Pushkar", submissions: subs, results, viewPerson: 0 };
-html = renderAllBracketsMobile(st);
-assert.ok(html.includes("person-select"));
+// all brackets — one person at a time, with switcher + tree for that person
+const st = { name: "Pushkar", submissions: subs, results, viewPerson: 1 };
+html = renderAllBrackets(st);
+assert.ok(html.includes("person-select"), "has person switcher");
+assert.ok(html.includes("bracket-tree"), "renders the desktop tree");
+assert.ok(html.includes("Viewing"), "shows whose bracket is displayed");
+// viewPerson 1 is "Mum" — only that person should be named in the viewing label
+assert.ok(html.includes("<strong>Mum</strong>"), "shows the selected person");
 assert.ok(html.includes("✅") || html.includes("⬜"));
-html = renderAllBracketsDesktop(st);
-assert.ok(html.includes("bracket-tree"));
 
 // XSS escaping for names
 const evil = [{ name: '<img src=x onerror=alert(1)>', submittedAt: "2026-06-28T00:00:00Z", picks: {} }];
@@ -71,7 +72,7 @@ assert.ok(!mine.includes('data-action="go-predict"'), "submitted viewer has no m
 assert.ok(mine.includes("You’re entered"));
 
 // results coloring shows up in all-brackets once results exist
-const colored = renderAllBracketsMobile({
+const colored = renderAllBrackets({
   name: "Pushkar",
   submissions: subs,
   results: { R32_M1: "Germany", R32_M9: "Japan" }, // Pushkar: M1 correct, M9 wrong

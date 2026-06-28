@@ -8,6 +8,7 @@ import {
   computeRoundMatchups,
   flagUrl,
 } from "./data/bracket.js";
+import { calculateScore } from "./scoring.js";
 
 // ---------- small helpers ----------
 export function esc(s) {
@@ -231,12 +232,45 @@ function leaderboardTable(state, ranked, hasResults) {
 }
 
 // ---------- all brackets ----------
-function renderAllBrackets(state) {
+export function renderAllBrackets(state) {
   const subs = state.submissions || [];
   if (!subs.length) return `<div class="empty">No brackets to show yet.</div>`;
+
+  const idx = Math.min(Math.max(state.viewPerson || 0, 0), subs.length - 1);
+  const person = subs[idx];
+  const me = state.name && person.name.toLowerCase() === state.name.toLowerCase();
+  const options = subs
+    .map((s, i) => `<option value="${i}" ${i === idx ? "selected" : ""}>${esc(s.name)}</option>`)
+    .join("");
+
+  let scoreLabel = "";
+  if (state.results && Object.keys(state.results).length > 0) {
+    const { score, correct, played } = calculateScore(person.picks, state.results);
+    scoreLabel = ` · <span class="mono">${score} pts · ${correct}/${played}</span>`;
+  }
+
+  const picker = `<div class="person-picker">
+      <button class="nav-btn" data-action="person-prev" aria-label="Previous person">‹</button>
+      <select id="person-select" aria-label="Choose whose bracket to view">${options}</select>
+      <button class="nav-btn" data-action="person-next" aria-label="Next person">›</button>
+    </div>
+    <div class="viewing-label">Viewing <strong>${esc(person.name)}${me ? " (you)" : ""}</strong>${scoreLabel}</div>`;
+
+  // Mobile: vertical cards for this one person. Desktop: horizontal tree for this one person.
+  const mobileCards = ROUNDS.map((round) => {
+    const matchups = computeRoundMatchups(person.picks, round);
+    const cards = matchups
+      .map((m) =>
+        renderMatchCard(m, { mode: "view", pick: person.picks[m.id], result: state.results?.[m.id] })
+      )
+      .join("");
+    return `<div class="ab-round-label">${ROUND_LABELS[round]}</div><div class="cards">${cards}</div>`;
+  }).join("");
+
   return `${lastUpdatedHtml(state)}
-    ${renderAllBracketsMobile(state)}
-    ${renderAllBracketsDesktop(state)}`;
+    ${picker}
+    <div class="ab-mobile">${mobileCards}</div>
+    ${bracketTree(person.picks, state.results, me)}`;
 }
 
 function lastUpdatedHtml(state) {
@@ -245,62 +279,7 @@ function lastUpdatedHtml(state) {
   return `<div class="last-updated">Results updated: ${esc(d.toLocaleString())}</div>`;
 }
 
-export function renderAllBracketsMobile(state) {
-  const subs = state.submissions || [];
-  const idx = Math.min(state.viewPerson || 0, subs.length - 1);
-  const person = subs[idx];
-  const options = subs
-    .map((s, i) => `<option value="${i}" ${i === idx ? "selected" : ""}>${esc(s.name)}</option>`)
-    .join("");
-
-  const rounds = ROUNDS.map((round) => {
-    const matchups = computeRoundMatchups(person.picks, round);
-    const cards = matchups
-      .map((m) =>
-        renderMatchCard(m, {
-          mode: "view",
-          pick: person.picks[m.id],
-          result: state.results?.[m.id],
-        })
-      )
-      .join("");
-    return `<div class="ab-round-label">${ROUND_LABELS[round]}</div><div class="cards">${cards}</div>`;
-  }).join("");
-
-  return `<div class="ab-mobile">
-    <div class="person-picker">
-      <button class="nav-btn" data-action="person-prev" aria-label="Previous person">‹</button>
-      <select id="person-select" aria-label="Choose a person">${options}</select>
-      <button class="nav-btn" data-action="person-next" aria-label="Next person">›</button>
-    </div>
-    ${rounds}
-  </div>`;
-}
-
-// Desktop: horizontal bracket tree, one column per round, all submitters? -> per spec it's
-// one bracket per submitter side-by-side. We render the selected person's tree plus the
-// ability to scroll people. To keep it readable we render each submitter as a tree block.
-export function renderAllBracketsDesktop(state) {
-  const subs = state.submissions || [];
-  // order: "me" first
-  const ordered = [...subs].sort((a, b) => {
-    const am = state.name && a.name.toLowerCase() === state.name.toLowerCase() ? -1 : 0;
-    const bm = state.name && b.name.toLowerCase() === state.name.toLowerCase() ? -1 : 0;
-    return am - bm;
-  });
-  const people = ordered
-    .map((person) => {
-      const me = state.name && person.name.toLowerCase() === state.name.toLowerCase();
-      return `<div class="ab-person-col ${me ? "me" : ""}">
-        <h3>${esc(person.name)}${me ? " (you)" : ""}</h3>
-        ${bracketTree(person.picks, state.results)}
-      </div>`;
-    })
-    .join("");
-  return `<div class="ab-people">${people}</div>`;
-}
-
-function bracketTree(picks, results) {
+function bracketTree(picks, results, me = false) {
   const cols = ROUNDS.map((round) => {
     const matchups = computeRoundMatchups(picks, round);
     const slots = matchups
@@ -324,7 +303,7 @@ function bracketTree(picks, results) {
       .join("");
     return `<div class="bt-column"><div class="bt-round-title">${ROUND_LABELS[round]}</div><div class="bt-slots">${slots}</div></div>`;
   }).join("");
-  return `<div class="bracket-tree">${cols}</div>`;
+  return `<div class="bracket-tree ${me ? "me" : ""}">${cols}</div>`;
 }
 
 // ---------- submit confirm modal ----------
