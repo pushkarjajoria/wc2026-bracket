@@ -7,11 +7,6 @@ leaderboard as results come in.
 - **App repo** (this one): all the static site code + `data/results.json` (real winners) + the results CLI.
 - **Data repo** (separate, e.g. `wc2026-bracket-data`): holds `predictions.json` (everyone's picks).
 
-Why two repos? User submissions are written from the browser using a GitHub token.
-That token is scoped to **only the data repo**, so even if someone extracts it from the
-page, the worst they can do is edit bracket predictions — they can't touch this app's
-code or any other repository.
-
 ---
 
 ## How it works
