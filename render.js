@@ -29,6 +29,14 @@ function flagHtml(team, cls = "team-flag") {
   return `<img class="${cls}" src="${url}" alt="${esc(team)} flag" loading="lazy" width="32" height="24" />`;
 }
 
+// "1" or, when decided on penalties, "1 (4)".
+function teamScoreText(scoreObj, team) {
+  if (!scoreObj || !scoreObj.goals || scoreObj.goals[team] === undefined) return "";
+  const g = scoreObj.goals[team];
+  const p = scoreObj.pens?.[team];
+  return p !== undefined && p !== null ? `${g} (${p})` : `${g}`;
+}
+
 function metaHtml(match) {
   if (!match.date && !match.venue) return "";
   const parts = [];
@@ -40,7 +48,7 @@ function metaHtml(match) {
 // ---------- match card ----------
 // mode "predict": clickable rows; `pick` = current selection.
 // mode "view":    static rows; `pick` = a submitter's pick; `result` = real winner (optional).
-export function renderMatchCard(match, { mode = "predict", pick, result } = {}) {
+export function renderMatchCard(match, { mode = "predict", pick, result, score } = {}) {
   const hasPick = !!pick;
   const rows = match.teams.map((team) => {
     if (team === "TBD") {
@@ -61,14 +69,17 @@ export function renderMatchCard(match, { mode = "predict", pick, result } = {}) 
       if (result) {
         const correct = result === team;
         resClass = correct ? "res-correct" : "res-wrong";
-        badge = `<span class="res-badge" title="${correct ? "Correct" : "Wrong"}">${correct ? "✅" : "❌"}</span>`;
+        badge = `<span class="res-badge ${correct ? "ok" : "no"}" title="${correct ? "Correct pick" : "Wrong pick"}">${correct ? "✅" : "❌"}</span>`;
       } else {
-        badge = `<span class="res-badge" title="Not played yet">⬜</span>`;
+        badge = `<span class="res-badge pending" title="Not played yet">⬜</span>`;
       }
     }
-    return `<div class="team-row ${resClass}" aria-pressed="${selected}">
+    const sc = teamScoreText(score, team);
+    const scoreSpan = sc ? `<span class="team-score">${esc(sc)}</span>` : "";
+    return `<div class="team-row view ${resClass}" aria-pressed="${selected}">
       ${flagHtml(team)}
       <span class="team-name">${esc(team)}</span>
+      ${scoreSpan}
       ${badge}
     </div>`;
   });
@@ -261,7 +272,12 @@ export function renderAllBrackets(state) {
     const matchups = computeRoundMatchups(person.picks, round);
     const cards = matchups
       .map((m) =>
-        renderMatchCard(m, { mode: "view", pick: person.picks[m.id], result: state.results?.[m.id] })
+        renderMatchCard(m, {
+          mode: "view",
+          pick: person.picks[m.id],
+          result: state.results?.[m.id],
+          score: state.scores?.[m.id],
+        })
       )
       .join("");
     return `<div class="ab-round-label">${ROUND_LABELS[round]}</div><div class="cards">${cards}</div>`;
@@ -270,7 +286,7 @@ export function renderAllBrackets(state) {
   return `${lastUpdatedHtml(state)}
     ${picker}
     <div class="ab-mobile">${mobileCards}</div>
-    ${bracketTree(person.picks, state.results, me)}`;
+    ${bracketTree(person.picks, state.results, state.scores, me)}`;
 }
 
 function lastUpdatedHtml(state) {
@@ -279,11 +295,12 @@ function lastUpdatedHtml(state) {
   return `<div class="last-updated">Results updated: ${esc(d.toLocaleString())}</div>`;
 }
 
-function bracketTree(picks, results, me = false) {
+function bracketTree(picks, results, scores, me = false) {
   const cols = ROUNDS.map((round) => {
     const matchups = computeRoundMatchups(picks, round);
     const slots = matchups
       .map((m) => {
+        const scoreObj = scores?.[m.id];
         const teams = m.teams
           .map((team) => {
             if (team === "TBD") return `<div class="bt-team"><span class="nm muted">TBD</span></div>`;
@@ -295,7 +312,10 @@ function bracketTree(picks, results, me = false) {
             const flag = flagUrl(team)
               ? `<img class="flag" src="${flagUrl(team)}" alt="" width="20" height="15" />`
               : `<span class="flag" aria-hidden="true"></span>`;
-            return `<div class="bt-team ${cls}">${flag}<span class="nm">${esc(team)}</span></div>`;
+            const sc = teamScoreText(scoreObj, team);
+            const scoreSpan = sc ? `<span class="bt-score">${esc(sc)}</span>` : "";
+            const badge = isPick && result ? `<span class="bt-badge">${result === team ? "✅" : "❌"}</span>` : "";
+            return `<div class="bt-team ${cls}">${flag}<span class="nm">${esc(team)}</span>${scoreSpan}${badge}</div>`;
           })
           .join("");
         return `<div class="bt-match">${teams}</div>`;

@@ -1,13 +1,17 @@
 #!/usr/bin/env node
 // Update match results, then commit + push so GitHub Pages redeploys.
 //
-//   node update-results.mjs --list                 show every match + current status
-//   node update-results.mjs R32_M9=Brazil          set a winner (commits + pushes)
+//   node update-results.mjs --list                  show every match + current status
+//   node update-results.mjs R32_M9=Brazil           set a winner (commits + pushes)
+//   node update-results.mjs R32_M9=Brazil:2-1        set winner + score (fixture order)
+//   node update-results.mjs R32_M3=Canada:1-1(4-3)   draw decided on penalties: 1-1, pens 4-3
 //   node update-results.mjs R32_M9=Brazil QF_M1=Germany -m "Jun 29 results"
-//   node update-results.mjs R32_M9=                 unset (mistake fix)
-//   node update-results.mjs R32_M9=Brazil --dry-run preview only, no write
-//   node update-results.mjs R32_M9=Brazil --no-push commit locally but don't push
+//   node update-results.mjs R32_M9=                  unset (mistake fix)
+//   node update-results.mjs R32_M9=Brazil --dry-run  preview only, no write
+//   node update-results.mjs R32_M9=Brazil --no-push  commit locally but don't push
 //
+// Score is written in the SAME order the fixture is shown by --list
+// (teamA-teamB). Penalties go in brackets: goals(pens), e.g. 1-1(4-3).
 // Team names are matched case-insensitively and accept common aliases
 // (e.g. "usa", "drc", "cote d'ivoire", "bosnia").
 
@@ -62,12 +66,21 @@ function matchTeams(doc, matchId) {
   return m ? m.teams : [];
 }
 
+function scoreLine(doc, matchId, teams) {
+  const sc = doc.scores?.[matchId];
+  if (!sc || !sc.goals || teams.length !== 2) return "";
+  const g = `${sc.goals[teams[0]] ?? "?"}-${sc.goals[teams[1]] ?? "?"}`;
+  if (sc.pens) return `${g} (pens ${sc.pens[teams[0]] ?? "?"}-${sc.pens[teams[1]] ?? "?"})`;
+  return g;
+}
+
 function fmt(matchId, doc) {
   const teams = matchTeams(doc, matchId);
   const meta = SEED_BY_ID[matchId] || ROUND_META[matchId] || {};
   const winner = doc.results[matchId];
   const vs = teams.length ? teams.join(" vs ") : "(teams TBD)";
-  const status = winner ? `WINNER: ${winner}` : "—";
+  const sc = scoreLine(doc, matchId, teams);
+  const status = winner ? `WINNER: ${winner}${sc ? `  [${sc}]` : ""}` : "—";
   return `  ${matchId.padEnd(8)} ${(meta.date || "").padEnd(11)} ${vs.padEnd(34)} ${status}`;
 }
 
@@ -83,7 +96,7 @@ function printList(doc) {
 function main() {
   const args = process.argv.slice(2);
   if (args.length === 0 || args.includes("--help") || args.includes("-h")) {
-    console.log(readFileSync(new URL(import.meta.url)).toString().split("\n").slice(1, 18).join("\n").replace(/^\/\/ ?/gm, ""));
+    console.log(readFileSync(new URL(import.meta.url)).toString().split("\n").slice(1, 16).join("\n").replace(/^\/\/ ?/gm, ""));
     return;
   }
 
@@ -116,12 +129,19 @@ function main() {
     }
     if (rawTeam === "") {
       delete doc.results[matchId];
+      if (doc.scores) delete doc.scores[matchId];
       applied.push(`${matchId} → (cleared)`);
       continue;
     }
-    const team = canonTeam(rawTeam);
+
+    // Split "Winner" and optional ":score" (e.g. "Brazil:2-1" or "Canada:1-1(4-3)").
+    const colon = rawTeam.indexOf(":");
+    const winnerRaw = colon === -1 ? rawTeam : rawTeam.slice(0, colon).trim();
+    const scoreSpec = colon === -1 ? "" : rawTeam.slice(colon + 1).trim();
+
+    const team = canonTeam(winnerRaw);
     if (!team) {
-      console.error(`Unknown team: "${rawTeam}".`);
+      console.error(`Unknown team: "${winnerRaw}".`);
       process.exit(1);
     }
     const teams = matchTeams(doc, matchId);
@@ -133,8 +153,47 @@ function main() {
     if (teams.includes("TBD")) {
       console.warn(`! ${matchId}: opponent not yet determined — setting "${team}" anyway.`);
     }
+
     doc.results[matchId] = team;
-    applied.push(`${matchId} → ${team}`);
+    let appliedScore = "";
+
+    if (scoreSpec) {
+      const m = scoreSpec.match(/^(\d+)-(\d+)(?:\((\d+)-(\d+)\))?$/);
+      if (!m) {
+        console.error(`Bad score "${scoreSpec}" for ${matchId}. Use e.g. 2-1 or 1-1(4-3).`);
+        process.exit(1);
+      }
+      if (teams.length !== 2 || teams.includes("TBD")) {
+        console.error(`Can't record a score for ${matchId} until both teams are known.`);
+        process.exit(1);
+      }
+      const [gA, gB] = [Number(m[1]), Number(m[2])];
+      const hasPens = m[3] !== undefined;
+      const [pA, pB] = hasPens ? [Number(m[3]), Number(m[4])] : [null, null];
+
+      // Verify the declared winner agrees with the score.
+      let scoreWinner;
+      if (gA !== gB) scoreWinner = gA > gB ? teams[0] : teams[1];
+      else if (hasPens && pA !== pB) scoreWinner = pA > pB ? teams[0] : teams[1];
+      else {
+        console.error(`${matchId}: ${gA}-${gB} is a draw — add penalties, e.g. ${team}:${gA}-${gB}(4-3).`);
+        process.exit(1);
+      }
+      if (scoreWinner !== team) {
+        console.error(`${matchId}: score ${scoreSpec} (${teams[0]}-${teams[1]}) says ${scoreWinner} won, but you set ${team}. Check the order.`);
+        process.exit(1);
+      }
+
+      doc.scores = doc.scores || {};
+      doc.scores[matchId] = { goals: { [teams[0]]: gA, [teams[1]]: gB } };
+      if (hasPens) doc.scores[matchId].pens = { [teams[0]]: pA, [teams[1]]: pB };
+      appliedScore = ` (${scoreLine(doc, matchId, teams)})`;
+    } else if (doc.scores) {
+      // Winner set without a score — drop any stale score for this match.
+      delete doc.scores[matchId];
+    }
+
+    applied.push(`${matchId} → ${team}${appliedScore}`);
   }
 
   doc.lastUpdated = new Date().toISOString();

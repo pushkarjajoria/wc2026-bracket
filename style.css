@@ -268,7 +268,7 @@ button { font-family: inherit; cursor: pointer; }
 .team-row.tbd:hover { background: transparent; }
 
 @media (prefers-reduced-motion: no-preference) {
-  .team-row[aria-pressed="true"] { animation: pulse 320ms ease; }
+  .team-row[aria-pressed="true"]:not(.view) { animation: pulse 320ms ease; }
 }
 @keyframes pulse {
   0% { background: rgba(245,197,66,0.35); }
@@ -287,10 +287,35 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 /* result overlays on team rows (all-brackets view) */
-.team-row.res-correct { border-left-color: var(--accent-green); }
-.team-row.res-correct .team-name { color: var(--accent-green); }
-.team-row.res-wrong .team-name { color: var(--danger); text-decoration: line-through; }
-.res-badge { font-size: 13px; flex: none; }
+.team-row.res-correct {
+  border-left-color: var(--accent-green);
+  border-left-width: 5px;
+  background: rgba(61, 214, 140, 0.16);
+}
+.team-row.res-correct .team-name { color: var(--accent-green); font-weight: 700; }
+.team-row.res-wrong {
+  border-left-color: var(--danger);
+  border-left-width: 5px;
+  background: rgba(248, 81, 73, 0.13);
+}
+.team-row.res-wrong .team-name { color: var(--danger); text-decoration: line-through; opacity: 0.85; }
+.team-score {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-primary);
+  flex: none;
+  min-width: 26px;
+  text-align: right;
+}
+.res-badge {
+  font-size: 20px;
+  flex: none;
+  line-height: 1;
+  width: 26px;
+  text-align: center;
+}
+.res-badge.pending { opacity: 0.5; }
 
 /* ---------- Sticky CTA ---------- */
 .sticky-cta {
@@ -468,10 +493,20 @@ button { font-family: inherit; cursor: pointer; }
     white-space: nowrap;
   }
   .bt-team .flag { width: 20px; height: 15px; border-radius: 2px; flex: none; object-fit: cover; }
-  .bt-team .nm { overflow: hidden; text-overflow: ellipsis; }
+  .bt-team .nm { overflow: hidden; text-overflow: ellipsis; flex: 1; }
+  .bt-team .bt-score { font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 12px; flex: none; }
+  .bt-team .bt-badge { flex: none; font-size: 13px; line-height: 1; }
   .bt-team.win { border-left: 3px solid var(--accent); }
-  .bt-team.correct { border-left: 3px solid var(--accent-green); }
-  .bt-team.wrong { color: var(--danger); }
+  .bt-team.correct {
+    border-left: 4px solid var(--accent-green);
+    background: rgba(61, 214, 140, 0.16);
+  }
+  .bt-team.correct .nm { color: var(--accent-green); font-weight: 700; }
+  .bt-team.wrong {
+    border-left: 4px solid var(--danger);
+    background: rgba(248, 81, 73, 0.13);
+  }
+  .bt-team.wrong .nm { color: var(--danger); text-decoration: line-through; }
   .bracket-tree.me { outline: 2px solid var(--accent); border-radius: 12px; padding: 14px; }
 
   .ab-people { display: flex; gap: 24px; overflow-x: auto; }

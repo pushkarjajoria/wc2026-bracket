@@ -40,6 +40,7 @@ const state = {
   currentRound: "R32",
   submissions: [],
   results: {},
+  scores: {},
   resultsMeta: {},
   viewTab: "leaderboard",
   viewPerson: 0,
@@ -354,6 +355,7 @@ async function boot() {
   try {
     const [resultsDoc, pred] = await Promise.all([readResults(), readPredictions()]);
     state.results = resultsDoc.results || {};
+    state.scores = resultsDoc.scores || {};
     state.resultsMeta = { lastUpdated: resultsDoc.lastUpdated };
     state.submissions = pred.data.submissions || [];
   } catch (err) {

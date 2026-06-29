@@ -81,4 +81,27 @@ const colored = renderAllBrackets({
 assert.ok(colored.includes("res-correct"), "correct pick gets green class");
 assert.ok(colored.includes("res-wrong"), "wrong pick gets red class");
 
+// scores show next to names, with badges
+const withScores = renderAllBrackets({
+  name: "Pushkar",
+  submissions: subs,
+  results: { R32_M3: "Canada" }, // Pushkar picked South Africa -> wrong
+  scores: { R32_M3: { goals: { "South Africa": 0, "Canada": 1 } } },
+  viewPerson: 0,
+});
+assert.ok(withScores.includes('class="team-score">1'), "renders Canada's goal next to the name");
+assert.ok(withScores.includes('class="team-score">0'), "renders South Africa's goal");
+assert.ok(withScores.includes("❌"), "wrong pick shows ❌ badge");
+assert.ok(withScores.includes("bt-score"), "desktop tree shows the score too");
+
+// penalty notation: "1 (4)"
+const pens = renderAllBrackets({
+  name: "Pushkar",
+  submissions: subs,
+  results: { R32_M3: "Canada" },
+  scores: { R32_M3: { goals: { "South Africa": 1, "Canada": 1 }, pens: { "South Africa": 3, "Canada": 4 } } },
+  viewPerson: 0,
+});
+assert.ok(pens.includes("1 (4)"), "penalty score uses bracket notation");
+
 console.log("render smoke: all assertions passed");
