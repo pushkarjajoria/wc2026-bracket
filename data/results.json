@@ -1,14 +1,21 @@
 {
   "version": 1,
-  "lastUpdated": "2026-06-29T09:25:30.256Z",
+  "lastUpdated": "2026-06-29T20:20:36.996Z",
   "results": {
-    "R32_M3": "Canada"
+    "R32_M3": "Canada",
+    "R32_M9": "Brazil"
   },
   "scores": {
     "R32_M3": {
       "goals": {
         "South Africa": 0,
         "Canada": 1
+      }
+    },
+    "R32_M9": {
+      "goals": {
+        "Brazil": 2,
+        "Japan": 1
       }
     }
   }
