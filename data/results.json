@@ -1,10 +1,11 @@
 {
   "version": 1,
-  "lastUpdated": "2026-06-29T23:34:03.197Z",
+  "lastUpdated": "2026-06-30T09:46:23.506Z",
   "results": {
     "R32_M3": "Canada",
     "R32_M9": "Brazil",
-    "R32_M1": "Paraguay"
+    "R32_M1": "Paraguay",
+    "R32_M4": "Morocco"
   },
   "scores": {
     "R32_M3": {
@@ -27,6 +28,16 @@
       "pens": {
         "Germany": 3,
         "Paraguay": 4
+      }
+    },
+    "R32_M4": {
+      "goals": {
+        "Netherlands": 1,
+        "Morocco": 1
+      },
+      "pens": {
+        "Netherlands": 2,
+        "Morocco": 3
       }
     }
   }
