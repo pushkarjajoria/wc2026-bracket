@@ -75,6 +75,41 @@ function allPicked(picks) {
   return ROUNDS.every((r) => roundComplete(picks, r));
 }
 
+// Matches that were already decided (have an official result). For a new entry
+// these are "locked": auto-filled with the real winner and not scored.
+function lockedSet(results) {
+  return new Set(
+    Object.keys(results || {}).filter((id) => results[id])
+  );
+}
+
+// Force every already-decided match to the real winner, cascading round by round
+// so the rest of the bracket derives from reality. Drops downstream picks that
+// depended on a team that has since been eliminated.
+function enforceLocks(picks, results) {
+  for (const round of ROUNDS) {
+    for (const m of computeRoundMatchups(picks, round)) {
+      const winner = results?.[m.id];
+      if (winner && m.teams.includes(winner) && picks[m.id] !== winner) {
+        picks[m.id] = winner;
+      }
+    }
+  }
+  pruneDownstream(picks);
+  return picks;
+}
+
+// First round that still has an open (non-locked, unpicked) match — where a new
+// entrant should start, so they skip straight past finished games.
+function firstOpenRound(picks, results) {
+  const locked = lockedSet(results);
+  for (const round of ROUNDS) {
+    const m = computeRoundMatchups(picks, round);
+    if (m.some((x) => !picks[x.id] && !locked.has(x.id))) return round;
+  }
+  return "R32";
+}
+
 function anyDatePassed(picks) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -100,11 +135,19 @@ function render() {
       setTimeout(() => document.getElementById("name-input")?.focus(), 0);
       break;
     case PHASES.PREDICT:
-      app.innerHTML = renderPredict(state, reachableRounds(state.picks));
+      app.innerHTML = renderPredict(
+        state,
+        reachableRounds(state.picks),
+        lockedSet(state.results)
+      );
       break;
     case PHASES.REVIEW:
     case PHASES.SUBMITTING:
-      app.innerHTML = renderReview(state, anyDatePassed(state.picks));
+      app.innerHTML = renderReview(
+        state,
+        anyDatePassed(state.picks),
+        lockedSet(state.results)
+      );
       break;
     case PHASES.LEADERBOARD: {
       const hasResults = Object.keys(state.results).length > 0;
@@ -170,13 +213,16 @@ function startPicking() {
   state.name = name;
   state.nameError = "";
   state.resumeName = "";
+  // Auto-fill any matches that already finished so new entrants skip them.
+  state.picks = enforceLocks({}, state.results);
   state.phase = PHASES.PREDICT;
-  state.currentRound = "R32";
+  state.currentRound = firstOpenRound(state.picks, state.results);
   saveLocalDraft(state);
   render();
 }
 
 function pick(matchId, team) {
+  if (lockedSet(state.results).has(matchId)) return; // already decided
   state.picks[matchId] = team;
   pruneDownstream(state.picks);
   saveLocalDraft(state);
@@ -216,10 +262,15 @@ async function doSubmit() {
   closeModal();
   state.phase = PHASES.SUBMITTING;
   render();
+  // Make sure finished matches reflect the real winner, and tag them as locked
+  // so they're excluded from this person's score (they joined after kickoff).
+  enforceLocks(state.picks, state.results);
+  const locked = [...lockedSet(state.results)].filter((id) => state.picks[id]);
   const entry = {
     name: state.name,
     submittedAt: new Date().toISOString(),
     picks: { ...state.picks },
+    ...(locked.length ? { lockedMatches: locked } : {}),
   };
   try {
     const data = await submitWithRetry(entry);
@@ -370,7 +421,8 @@ async function boot() {
     state.phase = PHASES.LEADERBOARD;
   } else if (draft?.picks && Object.keys(draft.picks).length > 0) {
     state.name = draft.name || "";
-    state.picks = draft.picks;
+    // Reconcile the saved draft with results that landed since it was saved.
+    state.picks = enforceLocks(draft.picks, state.results);
     state.currentRound = draft.currentRound || "R32";
     state.resumeName = draft.name || "";
     state.phase = PHASES.NAME_ENTRY;

@@ -316,6 +316,21 @@ button { font-family: inherit; cursor: pointer; }
   text-align: center;
 }
 .res-badge.pending { opacity: 0.5; }
+.res-badge.lock { opacity: 0.85; }
+
+/* already-decided (locked) matches: neutral, not graded */
+.team-row.res-locked {
+  border-left-color: var(--text-secondary);
+  border-left-width: 5px;
+  background: rgba(139, 148, 158, 0.12);
+}
+.team-row.res-locked .team-name { color: var(--text-primary); font-weight: 700; }
+.match-card.locked { opacity: 0.92; }
+.match-card.locked .match-meta::after {
+  content: "🔒 already played";
+  margin-left: auto;
+  color: var(--text-secondary);
+}
 
 /* ---------- Sticky CTA ---------- */
 .sticky-cta {
@@ -358,6 +373,18 @@ button { font-family: inherit; cursor: pointer; }
   margin-bottom: 16px;
   font-size: 14px;
 }
+.info-banner {
+  background: rgba(139, 148, 158, 0.12);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.review-row.locked { opacity: 0.75; }
+.review-row .lock-tag { margin-left: auto; flex: none; font-size: 15px; }
 
 /* ---------- Modal ---------- */
 .modal-overlay {
@@ -507,6 +534,11 @@ button { font-family: inherit; cursor: pointer; }
     background: rgba(248, 81, 73, 0.13);
   }
   .bt-team.wrong .nm { color: var(--danger); text-decoration: line-through; }
+  .bt-team.locked {
+    border-left: 4px solid var(--text-secondary);
+    background: rgba(139, 148, 158, 0.12);
+  }
+  .bt-team.locked .nm { font-weight: 700; }
   .bracket-tree.me { outline: 2px solid var(--accent); border-radius: 12px; padding: 14px; }
 
   .ab-people { display: flex; gap: 24px; overflow-x: auto; }

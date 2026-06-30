@@ -104,4 +104,44 @@ const pens = renderAllBrackets({
 });
 assert.ok(pens.includes("1 (4)"), "penalty score uses bracket notation");
 
+// predict flow: a finished match is locked (filled in, not clickable, flagged)
+const lockedPredict = renderPredict(
+  {
+    currentRound: "R32",
+    picks: { R32_M1: "Germany" },
+    results: { R32_M1: "Germany" },
+    scores: { R32_M1: { goals: { Germany: 2, Paraguay: 0 } } },
+  },
+  new Set(["R32"]),
+  new Set(["R32_M1"])
+);
+assert.ok(lockedPredict.includes("already finished"), "predict shows a locked-matches note");
+assert.ok(lockedPredict.includes("res-locked"), "locked match renders as decided (neutral)");
+assert.ok(lockedPredict.includes("🔒"), "locked match shows the lock badge");
+assert.ok(
+  !lockedPredict.includes('data-match="R32_M1"'),
+  "locked match teams are not clickable pick buttons"
+);
+
+// all-brackets: a late joiner's auto-filled matches are neutral and not scored
+const lateAB = renderAllBrackets({
+  name: "Late",
+  submissions: [
+    {
+      name: "Late",
+      submittedAt: "2026-06-30T00:00:00Z",
+      picks: { R32_M3: "Canada" },
+      lockedMatches: ["R32_M3"],
+    },
+  ],
+  results: { R32_M3: "Canada" },
+  scores: { R32_M3: { goals: { "South Africa": 0, "Canada": 1 } } },
+  viewPerson: 0,
+});
+assert.ok(lateAB.includes("🔒"), "locked pick shows a lock badge in the view");
+assert.ok(lateAB.includes("res-locked"), "locked match is neutral, not graded");
+assert.ok(!lateAB.includes("res-correct"), "auto-filled match is not counted as correct");
+assert.ok(lateAB.includes("auto-filled"), "viewing label notes the auto-filled count");
+assert.ok(lateAB.includes("0 pts · 0/0"), "locked-only bracket scores nothing");
+
 console.log("render smoke: all assertions passed");

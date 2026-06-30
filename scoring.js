@@ -11,12 +11,18 @@ export function roundFor(matchId) {
 }
 
 // results: { matchId: winningTeam }. Only completed matches are present.
-export function calculateScore(picks, results) {
+// locked: matchIds that were already decided when this person signed up — those
+// are auto-filled with the real winner and don't count toward their score, so
+// late joiners can't farm free points off games they couldn't have predicted.
+export function calculateScore(picks, results, locked) {
+  const lockedSet =
+    locked instanceof Set ? locked : new Set(locked || []);
   let score = 0;
   let correct = 0;
   let played = 0;
   for (const [matchId, winner] of Object.entries(results || {})) {
     if (!winner) continue;
+    if (lockedSet.has(matchId)) continue;
     played++;
     if (picks && picks[matchId] === winner) {
       score += POINTS[roundFor(matchId)] || 0;
@@ -28,7 +34,7 @@ export function calculateScore(picks, results) {
 
 export function rankSubmissions(submissions, results) {
   return (submissions || [])
-    .map((s) => ({ ...s, ...calculateScore(s.picks, results) }))
+    .map((s) => ({ ...s, ...calculateScore(s.picks, results, s.lockedMatches) }))
     .sort(
       (a, b) =>
         b.score - a.score ||

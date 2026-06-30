@@ -90,4 +90,39 @@ const ranked = rankSubmissions(
 assert.deepEqual(ranked.map((r) => r.name), ["C", "A", "B"], "sorted by score then time");
 ok("rankSubmissions sorts by score desc, then submit time asc");
 
+// --- Locked (already-decided) matches don't count for late entries ---
+const lockedScore = calculateScore(
+  { R32_M1: "Germany", R32_M2: "France", FINAL: "Brazil" },
+  { R32_M1: "Germany", R32_M2: "France", FINAL: "Brazil" }, // all correct
+  ["R32_M1", "R32_M2"] // but these two were already decided when they joined
+);
+assert.deepEqual(
+  lockedScore,
+  { score: 16, correct: 1, played: 1 },
+  "locked matches are excluded from score and from played count"
+);
+ok("calculateScore ignores locked matches");
+
+// A late joiner with auto-filled (correct) locked picks does NOT outrank an
+// early entrant who actually predicted those games.
+const lockedRanked = rankSubmissions(
+  [
+    {
+      name: "Late",
+      submittedAt: "2026-06-30T10:00:00Z",
+      picks: { R32_M1: "Germany", R32_M3: "Canada" },
+      lockedMatches: ["R32_M1", "R32_M3"], // both auto-filled, not scored
+    },
+    {
+      name: "Early",
+      submittedAt: "2026-06-27T10:00:00Z",
+      picks: { R32_M1: "Germany", R32_M3: "Canada" }, // genuinely predicted both
+    },
+  ],
+  { R32_M1: "Germany", R32_M3: "Canada" }
+);
+assert.equal(lockedRanked[0].name, "Early", "early predictor outranks the late joiner");
+assert.equal(lockedRanked.find((r) => r.name === "Late").score, 0, "late joiner earns 0 from freebies");
+ok("rankSubmissions applies per-submission lockedMatches");
+
 console.log(`\nAll ${passed} checks passed.`);
